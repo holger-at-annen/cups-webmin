@@ -14,7 +14,7 @@ services:
       - WEBMIN_ADMIN_PASSWORD=${SERVICE_PASSWORD_WEBMIN:-default_password}
     volumes:
       - webmin_config:/etc/webmin
-      - /var/run/dbus:/var/run/dbus:ro
+      - /var/run/dbus:/var/run/dbus
       - /dev:/dev
       - /etc/group:/etc/group:ro
       - /etc/passwd:/etc/passwd:ro
