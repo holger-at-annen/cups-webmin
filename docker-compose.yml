@@ -13,23 +13,11 @@ services:
       - WEBMIN_PORT=${WEBMIN_PORT:-10000}
       - WEBMIN_ADMIN_PASSWORD=${SERVICE_PASSWORD_WEBMIN:-default_password}
     volumes:
-      - 'webmin_config:/etc/webmin'
-      - '/var/run/dbus:/var/run/dbus:ro'
-      - '/dev:/dev'
-      - '/etc/group:/etc/group:ro'
-      - '/etc/passwd:/etc/passwd:ro'
-    command: |
-      /bin/sh -c "
-        if [ -n \"\$WEBMIN_ADMIN_PASSWORD\" ]; then
-          echo 'Setting Webmin admin password...';
-          /usr/libexec/webmin/changepass.pl /etc/webmin admin \"\$WEBMIN_ADMIN_PASSWORD\";
-        else
-          echo 'Warning: WEBMIN_ADMIN_PASSWORD not set, using default credentials';
-        fi;
-        /usr/sbin/service webmin start;
-        /usr/sbin/service cups start;
-        tail -f /var/webmin/miniserv.log
-      "
+      - webmin_config:/etc/webmin
+      - /var/run/dbus:/var/run/dbus:ro
+      - /dev:/dev
+      - /etc/group:/etc/group:ro
+      - /etc/passwd:/etc/passwd:ro
     privileged: true
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:10000"]
