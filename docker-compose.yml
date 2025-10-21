@@ -2,7 +2,7 @@ version: '3.8'
 services:
   webmin:
     build:
-      context: .  # Build from Dockerfile in current directory
+      context: .
       dockerfile: Dockerfile
     container_name: webmin-cups
     restart: unless-stopped
@@ -11,7 +11,7 @@ services:
     environment:
       - TZ=${TZ:-Europe/Berlin}
       - WEBMIN_PORT=${WEBMIN_PORT:-10000}
-      - WEBMIN_ADMIN_PASSWORD=${SERVICE_PASSWORD_WEBMIN}
+      - WEBMIN_ADMIN_PASSWORD=${SERVICE_PASSWORD_WEBMIN:-default_password}
     volumes:
       - 'webmin_config:/etc/webmin'
       - '/var/run/dbus:/var/run/dbus:ro'
@@ -23,11 +23,18 @@ services:
         if [ -n \"\$WEBMIN_ADMIN_PASSWORD\" ]; then
           echo 'Setting Webmin admin password...';
           /usr/libexec/webmin/changepass.pl /etc/webmin admin \"\$WEBMIN_ADMIN_PASSWORD\";
+        else
+          echo 'Warning: WEBMIN_ADMIN_PASSWORD not set, using default credentials';
         fi;
         /usr/sbin/service webmin start;
         /usr/sbin/service cups start;
         tail -f /var/webmin/miniserv.log
       "
     privileged: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 volumes:
   webmin_config:
