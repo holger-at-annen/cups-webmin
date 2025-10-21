@@ -9,7 +9,8 @@ RUN apt-get update && apt-get upgrade -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Download and install Webmin with retry
-RUN wget --tries=3 --timeout=10 https://prdownloads.sourceforge.net/webmin/webmin_2.111_all.deb || \
+RUN apt-get update && \
+    wget --tries=3 --timeout=10 https://prdownloads.sourceforge.net/webmin/webmin_2.111_all.deb || \
     wget --tries=3 --timeout=10 https://sourceforge.net/projects/webadmin/files/webmin/2.111/webmin_2.111_all.deb && \
     dpkg -i webmin_2.111_all.deb || apt-get install -f -y && \
     rm webmin_2.111_all.deb && \
@@ -20,8 +21,12 @@ RUN apt-get update && \
     apt-get install -y cups cups-client cups-bsd cups-filters && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Copy entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Expose Webmin port
 EXPOSE 10000
 
-# Start Webmin and CUPS
-CMD ["/usr/sbin/service", "webmin", "start"] && ["/usr/sbin/service", "cups", "start"] && tail -f /var/webmin/miniserv.log
+# Use entrypoint to handle startup
+ENTRYPOINT ["/entrypoint.sh"]
