@@ -1,28 +1,18 @@
-version: '3.8'
+# CUPS user/password: print/print (defined in Dockerfile)
 services:
-  webmin:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: webmin-cups
-    restart: unless-stopped
-    ports:
-      - '${WEBMIN_PORT:-10000}:10000'
-    environment:
-      - TZ=${TZ:-Europe/Berlin}
-      - WEBMIN_PORT=${WEBMIN_PORT:-10000}
-      - WEBMIN_ADMIN_PASSWORD=${SERVICE_PASSWORD_WEBMIN:-default_password}
+  cups:
+    image: local/cups
+    container_name: cups
+    devices:
+      - "/dev/bus/usb:/dev/bus/usb"
     volumes:
-      - webmin_config:/etc/webmin
-      - /var/run/dbus:/var/run/dbus
-      - /dev:/dev
-      - /etc/group:/etc/group:ro
-      - /etc/passwd:/etc/passwd:ro
-    privileged: true
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:10000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-volumes:
-  webmin_config:
+      - "./data/root/start.sh:/root/start.sh:ro"
+      - "/run/dbus:/run/dbus"
+      # after you've populated these files you can copy them
+      # from container, save a backup, and map them from host
+      # so they'll always be predefined with your printer
+      #- "./data/etc/cups/cupsd.conf:/etc/cups/cupsd.conf"
+      #- "./data/etc/cups/printers.conf:/etc/cups/printers.conf"
+     environment:
+      - TZ=${TZ:-Europe/Berlin}
+    restart: "always"
